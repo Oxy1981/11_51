@@ -1,0 +1,849 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>CSS-практикум</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: одна колонка до 980px; липка панель розділів зверху; кожен розділ — окрема «сторінка» */
+:root{
+  --font-display:'Unbounded','Onest',system-ui,sans-serif;
+  --font-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --bg:#eaeff3; --surface:#ffffff; --surface-2:#f3f6f9; --ink:#14202b; --ink-2:#506170; --line:#d3dbe2;
+  --accent:#0a7f78; --accent-ink:#ffffff; --accent-soft:#d8efec;
+  --ok:#17733f; --ok-soft:#dcf2e5; --bad:#b83227; --bad-soft:#fbe3e0; --warn:#8a5a00; --warn-soft:#fdf0cf;
+  --code-bg:#13222d; --code-ink:#dde8ef; --k-sel:#ffbf7a; --k-prop:#7fdccf; --k-val:#a8c8ff; --k-tag:#f59fb0; --k-com:#7f93a3;
+  --paper:#ffffff; --paper-ink:#1b2430; --paper-line:#cfd6dd;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d151b; --surface:#152028; --surface-2:#1b2933; --ink:#e7eef3; --ink-2:#9db0be; --line:#2a3b47;
+    --accent:#3fd0c4; --accent-ink:#04201e; --accent-soft:#12342f;
+    --ok:#52cf88; --ok-soft:#133323; --bad:#ff8b80; --bad-soft:#3b1a17; --warn:#f0bd5a; --warn-soft:#3a2d0e;
+    --code-bg:#0a1319; --code-ink:#dde8ef; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d151b; --surface:#152028; --surface-2:#1b2933; --ink:#e7eef3; --ink-2:#9db0be; --line:#2a3b47;
+  --accent:#3fd0c4; --accent-ink:#04201e; --accent-soft:#12342f;
+  --ok:#52cf88; --ok-soft:#133323; --bad:#ff8b80; --bad-soft:#3b1a17; --warn:#f0bd5a; --warn-soft:#3a2d0e;
+  --code-bg:#0a1319; --code-ink:#dde8ef; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.6;
+  padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); background:var(--bg); z-index:10}
+.wrap{max-width:980px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
+h1,h2,h3{margin:0; text-wrap:balance}
+h1{font-family:var(--font-display); font-weight:600; font-size:clamp(20px,3.6vw,30px); line-height:1.2; letter-spacing:-.01em}
+h2{font-family:var(--font-display); font-weight:500; font-size:clamp(17px,2.6vw,21px); line-height:1.25}
+h3{font-size:17px; font-weight:700}
+p{margin:0}
+code,.mono{font-family:var(--font-mono); font-size:.88em}
+code{background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; overflow-wrap:anywhere}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+/* header */
+.top{display:flex; gap:16px; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; padding:6px 2px 0}
+.eyebrow{font-family:var(--font-mono); font-size:13px; color:var(--ink-2); margin-bottom:8px}
+.top-r{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.name-in{font:inherit; font-size:15px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); width:220px; max-width:100%}
+.chip{font-family:var(--font-mono); font-weight:700; font-size:15px; padding:8px 12px; border-radius:8px; background:var(--accent); color:var(--accent-ink); white-space:nowrap}
+
+/* nav */
+.nav{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:4px; background:var(--surface); border:1px solid var(--line); border-radius:12px}
+.nav button{font:inherit; font-weight:600; font-size:clamp(12.5px,2.4vw,15px); padding:10px 4px; border:0; border-radius:9px; background:transparent; color:var(--ink-2); cursor:pointer; min-width:0}
+.nav button[aria-selected="true"]{background:var(--accent); color:var(--accent-ink)}
+.nav button:not([aria-selected="true"]):hover{background:var(--surface-2); color:var(--ink)}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:clamp(16px,3vw,26px); display:flex; flex-direction:column; gap:18px; min-width:0}
+.lead{color:var(--ink-2); max-width:70ch}
+.sub{display:flex; gap:6px; flex-wrap:wrap}
+.sub button{font:inherit; font-weight:600; font-size:14px; padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.sub button[aria-selected="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.blk{display:flex; flex-direction:column; gap:18px; min-width:0}
+.blk[hidden]{display:none}
+
+/* tables and code */
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px}
+table{border-collapse:collapse; width:100%; min-width:620px; font-size:14.5px}
+th,td{text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line)}
+th{background:var(--surface-2); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0; background:var(--code-bg); color:var(--code-ink); font-family:var(--font-mono); font-size:13.5px; line-height:1.65; padding:14px 16px; border-radius:10px; overflow-x:auto; white-space:pre}
+.k-sel{color:var(--k-sel)} .k-prop{color:var(--k-prop)} .k-val{color:var(--k-val)} .k-tag{color:var(--k-tag)} .k-com{color:var(--k-com)}
+.note{background:var(--warn-soft); color:var(--ink); border-radius:10px; padding:12px 14px; font-size:15px}
+.remember{border-left:4px solid var(--accent); padding:4px 0 4px 14px; font-weight:600}
+
+/* priority ladder */
+.ladder{display:flex; flex-direction:column; gap:6px}
+.step{display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; background:var(--accent-soft); color:var(--ink); font-size:15px; flex-wrap:wrap}
+.step b{font-family:var(--font-mono); font-size:13px; min-width:22px; color:var(--accent)}
+.step:nth-child(1){width:100%} .step:nth-child(2){width:88%} .step:nth-child(3){width:76%} .step:nth-child(4){width:64%}
+@media (max-width:560px){.step:nth-child(n){width:100%}}
+.step small{color:var(--ink-2); margin-left:auto}
+
+/* demos */
+.demo{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface-2)}
+.demo>*{min-width:0}
+@media (max-width:760px){.demo{grid-template-columns:minmax(0,1fr)}}
+.demo-t{font-weight:700; margin-bottom:2px}
+.ctrls{display:flex; flex-direction:column; gap:10px}
+.ctrls label{display:flex; gap:8px; align-items:center; font-size:14.5px}
+.fld{display:grid; grid-template-columns:130px minmax(0,1fr) 54px; gap:8px; align-items:center; font-size:14px}
+.fld.two{grid-template-columns:130px minmax(0,1fr)}
+.fld .v{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-2); text-align:right}
+.fld select,.fld input[type=color]{font:inherit; font-size:14px; padding:6px 8px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); width:100%; min-width:0}
+.fld input[type=color]{height:34px; padding:2px}
+.fld input[type=range]{width:100%; accent-color:var(--accent)}
+.seg{display:flex; gap:4px; flex-wrap:wrap}
+.seg label{border:1px solid var(--line); border-radius:7px; padding:5px 9px; background:var(--surface); cursor:pointer; font-size:13.5px}
+.seg label:has(input:checked){background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.seg input{position:absolute; opacity:0; pointer-events:none}
+.seg label:has(input:focus-visible){outline:3px solid var(--accent); outline-offset:2px}
+.out{margin-top:2px}
+.say{font-size:14.5px; padding:10px 12px; border-radius:8px; background:var(--surface); border:1px solid var(--line)}
+#pr-host,#lab-host{display:block}
+.paper{background:var(--paper); color:var(--paper-ink); border:1px solid var(--paper-line); border-radius:8px}
+.dm-stage{background:var(--paper); color:var(--paper-ink); border:1px solid var(--paper-line); border-radius:8px; padding:12px; font-size:14px; line-height:1.5}
+.dm-item{background:var(--accent-soft); color:#0b2b29; outline:1px solid var(--accent)}
+#bg-box{border-radius:8px; border:1px solid var(--paper-line); height:90px; width:100%}
+
+/* buttons */
+.btn{font:inherit; font-weight:600; font-size:15px; padding:10px 16px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink-2)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.warn{background:var(--warn-soft); border-color:var(--warn); color:var(--ink)}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+.actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+/* trainer */
+.pills{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px}
+@media (max-width:560px){.pills{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pill{font:inherit; text-align:left; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); cursor:pointer; display:flex; flex-direction:column; gap:2px; min-width:0}
+.pill small{font-family:var(--font-mono); font-size:12px; color:var(--ink-2)}
+.pill[aria-selected="true"]{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset}
+.pill[data-state="done"]{background:var(--ok-soft)}
+.pill[data-state="done"] small{color:var(--ok)}
+.tr-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px}
+@media (max-width:760px){.tr-grid{grid-template-columns:minmax(0,1fr)}}
+.tr-grid>div{display:flex; flex-direction:column; gap:8px; min-width:0}
+.lbl{font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2)}
+textarea.ed{width:100%; min-height:230px; resize:vertical; background:var(--code-bg); color:var(--code-ink); font-family:var(--font-mono); font-size:13.5px; line-height:1.6; padding:12px 14px; border:1px solid var(--line); border-radius:10px; tab-size:2}
+.reqs{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.reqs li{display:flex; gap:10px; align-items:flex-start; font-size:15px}
+.mk{font-family:var(--font-mono); font-weight:700; width:20px; flex:none; text-align:center; color:var(--ink-2)}
+.reqs li[data-s="ok"] .mk{color:var(--ok)} .reqs li[data-s="no"] .mk{color:var(--bad)}
+.hint{background:var(--warn-soft); border-radius:10px; padding:12px 14px; font-size:15px}
+.fb{font-weight:600; min-height:1.6em}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--bad)}
+.tr-top{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:baseline}
+.tag{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-2); border:1px solid var(--line); border-radius:999px; padding:2px 10px}
+
+/* quiz */
+.qcard{border:1px solid var(--line); border-radius:12px; padding:clamp(14px,2.6vw,20px); display:flex; flex-direction:column; gap:12px; background:var(--surface)}
+.qcard[data-r="ok"]{border-color:var(--ok)} .qcard[data-r="no"]{border-color:var(--bad)} .qcard[data-r="part"]{border-color:var(--warn)}
+.qh{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; align-items:center}
+.qn{font-family:var(--font-mono); font-weight:700; font-size:13px}
+.qtext{font-weight:600}
+.opts{display:flex; flex-direction:column; gap:8px}
+.opt{display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--line); border-radius:9px; cursor:pointer; background:var(--surface)}
+.opt input{margin-top:5px; accent-color:var(--accent)}
+.opt span{min-width:0; overflow-wrap:anywhere}
+.opt:has(input:checked){border-color:var(--accent); background:var(--accent-soft)}
+.opt.is-correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.is-wrong{border-color:var(--bad); background:var(--bad-soft)}
+.mrow{display:grid; grid-template-columns:minmax(0,170px) minmax(0,1fr); gap:10px; align-items:center; padding:6px 8px; border:1px solid transparent; border-radius:8px}
+@media (max-width:560px){.mrow{grid-template-columns:minmax(0,1fr)}}
+.mrow select,.fill input{font:inherit; font-size:15px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); min-width:0; width:100%}
+.mrow.is-correct{background:var(--ok-soft)} .mrow.is-wrong{background:var(--bad-soft)}
+.fill{display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-family:var(--font-mono); font-size:14px}
+.fill input{width:180px; font-family:var(--font-mono)}
+.fill.is-correct input{border-color:var(--ok)} .fill.is-wrong input{border-color:var(--bad)}
+ol.order{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.ord{display:flex; gap:10px; align-items:center; padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--surface)}
+.ord-n{font-family:var(--font-mono); font-weight:700; width:22px; color:var(--accent)}
+.ord-t{flex:1; min-width:0; overflow-wrap:anywhere}
+.ord-b{display:flex; gap:4px}
+.ord-b button{font:inherit; width:34px; height:34px; border:1px solid var(--line); border-radius:7px; background:var(--surface-2); color:var(--ink); cursor:pointer}
+.ord-b button:disabled{opacity:.4; cursor:not-allowed}
+.ord.is-correct{background:var(--ok-soft); border-color:var(--ok)} .ord.is-wrong{background:var(--bad-soft); border-color:var(--bad)}
+.qres{border-radius:9px; padding:10px 12px; font-size:14.5px; background:var(--surface-2)}
+.qres b{font-family:var(--font-mono)}
+.submit-bar{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.banner{border-radius:12px; padding:14px 16px; background:var(--accent-soft); font-weight:600; display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:space-between}
+
+/* grade */
+.big{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.big .n{font-family:var(--font-display); font-weight:600; font-size:clamp(44px,10vw,72px); line-height:1}
+.big .of{font-family:var(--font-mono); color:var(--ink-2); font-size:20px}
+.level{font-weight:700; font-size:18px}
+.bars{display:flex; flex-direction:column; gap:12px}
+.bar-h{display:flex; justify-content:space-between; gap:8px; font-size:14.5px; flex-wrap:wrap}
+.bar{height:12px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden}
+.bar i{display:block; height:100%; background:var(--accent)}
+.stat{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.stat>div{background:var(--surface-2); border-radius:10px; padding:12px 14px; font-size:14.5px}
+.stat b{display:block; font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); margin-bottom:2px}
+.sumbox{width:100%; min-height:130px; font-family:var(--font-mono); font-size:13px; background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:10px 12px; resize:vertical}
+.scale{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; font-size:14px}
+.scale div{border:1px solid var(--line); border-radius:9px; padding:8px 10px}
+.scale div[data-on="1"]{border-color:var(--accent); background:var(--accent-soft)}
+.scale b{font-family:var(--font-mono)}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .5s ease}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">/* Інформатика · 11 клас · веб-технології */</div>
+      <h1>Селектори, шрифти та блоки в CSS</h1>
+    </div>
+    <div class="top-r">
+      <input id="stu-name" class="name-in" type="text" placeholder="Прізвище та ім’я" autocomplete="off" aria-label="Прізвище та ім’я учня">
+      <div class="chip" id="score-chip" role="status" aria-label="Набрано балів">0 / 12</div>
+    </div>
+  </header>
+
+  <nav class="nav" role="tablist" aria-label="Розділи уроку">
+    <button role="tab" id="tab-theory" aria-selected="true" data-v="theory">Теорія</button>
+    <button role="tab" id="tab-trainer" aria-selected="false" data-v="trainer">Тренаж</button>
+    <button role="tab" id="tab-quiz" aria-selected="false" data-v="quiz">Експрес-тест</button>
+    <button role="tab" id="tab-grade" aria-selected="false" data-v="grade">Оцінка</button>
+  </nav>
+
+  <!-- ТЕОРІЯ -->
+  <section class="panel" id="v-theory">
+    <div>
+      <h2>Теорія</h2>
+      <p class="lead" style="margin-top:6px">Три блоки: як вибрати елемент, як оформити текст і як керувати типом відображення та фоном. У кожному блоці є інтерактивний приклад, який можна змінювати.</p>
+    </div>
+    <div class="sub" role="tablist" aria-label="Блоки теорії">
+      <button role="tab" id="sb-0" aria-selected="true" data-b="0">Блок 1 · Селектори</button>
+      <button role="tab" id="sb-1" aria-selected="false" data-b="1">Блок 2 · Шрифти і текст</button>
+      <button role="tab" id="sb-2" aria-selected="false" data-b="2">Блок 3 · Блоки і потік</button>
+    </div>
+
+    <!-- Блок 1 -->
+    <div class="blk" id="th-0">
+      <h3>Селектори CSS та їх пріоритетність</h3>
+      <p>Селектор — це покажчик, який визначає, до яких саме HTML-елементів буде застосовано CSS-правило.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Тип селектора</th><th>Синтаксис у CSS</th><th>Приклад у HTML</th><th>Особливості</th></tr></thead>
+        <tbody>
+          <tr><td>Селектор тега</td><td><code>p { color: blue; }</code></td><td><code>&lt;p&gt;Текст&lt;/p&gt;</code></td><td>Застосовується до всіх тегів вказаного типу на сторінці.</td></tr>
+          <tr><td>Селектор класу</td><td><code>.card { background-color: #eee; }</code></td><td><code>&lt;div class="card"&gt;</code></td><td>Починається з крапки <code>.</code> Можна застосовувати до багатьох різних елементів.</td></tr>
+          <tr><td>Селектор ID</td><td><code>#header { height: 80px; }</code></td><td><code>&lt;div id="header"&gt;</code></td><td>Починається з решітки <code>#</code>. Використовується лише один раз для унікального елемента сторінки.</td></tr>
+          <tr><td>Контекстний (вкладений)</td><td><code>.card p { font-size: 14px; }</code></td><td><code>&lt;div class="card"&gt;&lt;p&gt;...&lt;/p&gt;&lt;/div&gt;</code></td><td>Оформлює тег <code>&lt;p&gt;</code>, який знаходиться всередині елемента з класом <code>card</code>.</td></tr>
+          <tr><td>Псевдоклас стану</td><td><code>a:hover { color: red; }</code></td><td><code>&lt;a href="#"&gt;Посилання&lt;/a&gt;</code></td><td>Записується через двокрапку <code>:</code> і спрацьовує у певний момент (наприклад, <code>:hover</code> — при наведенні курсора миші).</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Пріоритетність селекторів</h3>
+      <div class="ladder" role="list">
+        <div class="step" role="listitem"><b>1</b> Вбудований стиль <code>style=""</code> <small>найвищий</small></div>
+        <div class="step" role="listitem"><b>2</b> Ідентифікатор <code>#id</code></div>
+        <div class="step" role="listitem"><b>3</b> Клас <code>.class</code></div>
+        <div class="step" role="listitem"><b>4</b> Тег <code>p</code>, <code>h1</code> <small>найнижчий</small></div>
+      </div>
+
+      <div class="demo">
+        <div class="ctrls">
+          <div class="demo-t">Хто переможе?</div>
+          <p style="font-size:14.5px;color:var(--ink-2)">Увімкніть правила, які діють на один абзац <code>&lt;p id="main" class="note"&gt;</code>. Колір обирає браузер.</p>
+          <label><input type="checkbox" id="pr-tag" checked> тег <code>p</code> — синій</label>
+          <label><input type="checkbox" id="pr-class" checked> клас <code>.note</code> — зелений</label>
+          <label><input type="checkbox" id="pr-id"> ідентифікатор <code>#main</code> — червоний</label>
+          <label><input type="checkbox" id="pr-inline"> вбудований <code>style</code> — фіолетовий</label>
+        </div>
+        <div class="ctrls">
+          <div id="pr-host"></div>
+          <div class="say" id="pr-out" role="status"></div>
+          <pre class="code" id="pr-code"></pre>
+        </div>
+      </div>
+      <p class="remember">Запам’ятайте: вбудований стиль → #id → .class → тег.</p>
+    </div>
+
+    <!-- Блок 2 -->
+    <div class="blk" id="th-1" hidden>
+      <h3>Форматування шрифтів та тексту</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Керування шрифтом</th><th>Що задає</th><th>Значення</th></tr></thead>
+        <tbody>
+          <tr><td><code>font-family</code></td><td>Сімейство шрифтів. Записується через кому від основного до резервного.</td><td><code>Arial, Helvetica, sans-serif</code></td></tr>
+          <tr><td><code>font-size</code></td><td>Розмір шрифту.</td><td>пікселі <code>px</code>, пункти <code>pt</code>, відносні <code>em</code>, <code>rem</code></td></tr>
+          <tr><td><code>font-weight</code></td><td>Насиченість, жирність.</td><td><code>normal</code>, <code>bold</code> або числа від 100 до 900</td></tr>
+          <tr><td><code>font-style</code></td><td>Накреслення.</td><td><code>normal</code> — звичайне, <code>italic</code> — курсив</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Форматування тексту</th><th>Що задає</th><th>Значення</th></tr></thead>
+        <tbody>
+          <tr><td><code>color</code></td><td>Колір символів.</td><td>назва <code>red</code>, HEX <code>#FF0000</code>, <code>rgb(255, 0, 0)</code></td></tr>
+          <tr><td><code>text-align</code></td><td>Вирівнювання тексту.</td><td><code>left</code>, <code>right</code>, <code>center</code>, <code>justify</code></td></tr>
+          <tr><td><code>text-decoration</code></td><td>Оздоблення.</td><td><code>none</code> — прибрати підкреслення у посилань, <code>underline</code> — підкреслення, <code>line-through</code> — закреслення</td></tr>
+          <tr><td><code>line-height</code></td><td>Міжрядковий інтервал, покращує читабельність.</td><td>число, наприклад <code>1.5</code>, або <code>px</code></td></tr>
+          <tr><td><code>letter-spacing</code> / <code>word-spacing</code></td><td>Відстань між літерами / словами.</td><td><code>px</code>, <code>em</code></td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="demo">
+        <div class="ctrls">
+          <div class="demo-t">Лабораторія тексту</div>
+          <div class="fld two"><label for="lab-ff">font-family</label>
+            <select id="lab-ff"><option value="Arial, Helvetica, sans-serif">Arial, Helvetica, sans-serif</option><option value='Georgia, "Times New Roman", serif'>Georgia, serif</option><option value='"Courier New", monospace'>Courier New, monospace</option><option value="Verdana, Geneva, sans-serif">Verdana, sans-serif</option></select></div>
+          <div class="fld"><label for="lab-fs">font-size</label><input type="range" id="lab-fs" min="12" max="40" step="1" value="18"><span class="v" id="lab-fs-v"></span></div>
+          <div class="fld two"><label for="lab-fw">font-weight</label>
+            <select id="lab-fw"><option value="normal">normal</option><option value="bold">bold</option><option value="900">900</option></select></div>
+          <div class="fld two"><label for="lab-fst">font-style</label>
+            <select id="lab-fst"><option value="normal">normal</option><option value="italic">italic</option></select></div>
+          <div class="fld two"><label for="lab-col">color</label><input type="color" id="lab-col" value="#1b2430"></div>
+          <div class="fld two"><span id="lab-ta-l">text-align</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lab-ta-l">
+              <label><input type="radio" name="lab-ta" value="left" checked>left</label><label><input type="radio" name="lab-ta" value="center">center</label><label><input type="radio" name="lab-ta" value="right">right</label><label><input type="radio" name="lab-ta" value="justify">justify</label></div></div>
+          <div class="fld two"><label for="lab-td">text-decoration</label>
+            <select id="lab-td"><option value="none">none</option><option value="underline">underline</option><option value="line-through">line-through</option></select></div>
+          <div class="fld"><label for="lab-lh">line-height</label><input type="range" id="lab-lh" min="1" max="2.4" step="0.1" value="1.5"><span class="v" id="lab-lh-v"></span></div>
+          <div class="fld"><label for="lab-ls">letter-spacing</label><input type="range" id="lab-ls" min="0" max="8" step="1" value="0"><span class="v" id="lab-ls-v"></span></div>
+          <div class="fld"><label for="lab-ws">word-spacing</label><input type="range" id="lab-ws" min="0" max="20" step="1" value="0"><span class="v" id="lab-ws-v"></span></div>
+        </div>
+        <div class="ctrls">
+          <div id="lab-host"></div>
+          <pre class="code" id="lab-code"></pre>
+        </div>
+      </div>
+      <p class="remember">Запам’ятайте: шрифт — це font-*, а вигляд абзацу — color, text-align, text-decoration, line-height.</p>
+    </div>
+
+    <!-- Блок 3 -->
+    <div class="blk" id="th-2" hidden>
+      <h3>Базові властивості блоків та потоку документа</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Значення display</th><th>Поведінка</th><th>Приклади тегів</th></tr></thead>
+        <tbody>
+          <tr><td><code>block</code></td><td>Блочний елемент: займає всю доступну ширину, починається з нового рядка.</td><td><code>&lt;div&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code></td></tr>
+          <tr><td><code>inline</code></td><td>Рядковий елемент: займає ширину лише свого вмісту, розміщується в рядок.</td><td><code>&lt;span&gt;</code>, <code>&lt;a&gt;</code>, <code>&lt;b&gt;</code></td></tr>
+          <tr><td><code>inline-block</code></td><td>Гібридний варіант: елементи стоять в один рядок, але їм можна задавати ширину та висоту.</td><td>будь-який елемент, якому задано це значення</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Розміри та фон</th><th>Що задає</th></tr></thead>
+        <tbody>
+          <tr><td><code>width</code>, <code>height</code></td><td>Ширина і висота області вмісту (у <code>px</code> або <code>%</code>).</td></tr>
+          <tr><td><code>background-color</code></td><td>Колір фону (тла) елемента.</td></tr>
+          <tr><td><code>background</code></td><td>Універсальна властивість тла: суцільний колір або градієнти (<code>linear-gradient</code>, <code>radial-gradient</code>).</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="demo">
+        <div class="ctrls">
+          <div class="demo-t">Як поводиться display</div>
+          <div class="seg" role="radiogroup" aria-label="Значення display">
+            <label><input type="radio" name="dm-d" value="block" checked>block</label><label><input type="radio" name="dm-d" value="inline">inline</label><label><input type="radio" name="dm-d" value="inline-block">inline-block</label></div>
+          <label><input type="checkbox" id="dm-size"> додати <code>width: 110px; height: 46px;</code></label>
+          <div class="say" id="dm-say" role="status"></div>
+        </div>
+        <div class="ctrls">
+          <div class="dm-stage" id="dm-stage"><span class="dm-item">Елемент 1</span> <span class="dm-item">Елемент 2</span> <span class="dm-item">Елемент 3</span></div>
+          <pre class="code" id="dm-code"></pre>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="ctrls">
+          <div class="demo-t">Фон: колір і градієнти</div>
+          <div class="fld two"><label for="bg-kind">Тип фону</label>
+            <select id="bg-kind"><option value="solid">суцільний колір</option><option value="linear" selected>linear-gradient</option><option value="radial">radial-gradient</option></select></div>
+          <div class="fld two"><label for="bg-c1">Колір 1</label><input type="color" id="bg-c1" value="#0a7f78"></div>
+          <div class="fld two" id="bg-c2-row"><label for="bg-c2">Колір 2</label><input type="color" id="bg-c2" value="#ffbf7a"></div>
+          <div class="fld" id="bg-ang-row"><label for="bg-ang">Кут</label><input type="range" id="bg-ang" min="0" max="360" step="15" value="90"><span class="v" id="bg-ang-v"></span></div>
+        </div>
+        <div class="ctrls">
+          <div id="bg-box"></div>
+          <pre class="code" id="bg-code"></pre>
+        </div>
+      </div>
+      <p class="note">Внутрішні та зовнішні відступи, а також межі блоків ви детально вивчатимете на наступному уроці в межах теми «Блокова модель веб-сторінки».</p>
+      <p class="remember">Запам’ятайте: block — з нового рядка, inline — у рядок без розмірів, inline-block — у рядок із розмірами.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="th-prev" hidden>← Попередній блок</button>
+      <button class="btn primary" id="th-next">Наступний блок →</button>
+    </div>
+  </section>
+
+  <!-- ТРЕНАЖ -->
+  <section class="panel" id="v-trainer" hidden>
+    <div>
+      <h2>Тренаж</h2>
+      <p class="lead" style="margin-top:6px">Чотири завдання, максимум 4 бали. Пишіть CSS у редакторі й дивіться результат справа. Правильне виконання без підказки дає 1 бал. Якщо відкрити підказку, завдання можна виконати знову, але воно оцінюється в 0,5 бала.</p>
+    </div>
+    <div id="trainer-root" style="display:flex;flex-direction:column;gap:16px"></div>
+  </section>
+
+  <!-- ТЕСТ -->
+  <section class="panel" id="v-quiz" hidden>
+    <div>
+      <h2>Експрес-тест</h2>
+      <p class="lead" style="margin-top:6px">Вісім завдань різних видів, по 1 балу, разом 8 балів. У завданнях із кількома відповідями, відповідністю й порядком бали нараховуються за кожну правильну частину.</p>
+    </div>
+    <div id="quiz-root" style="display:flex;flex-direction:column;gap:16px"></div>
+  </section>
+
+  <!-- ОЦІНКА -->
+  <section class="panel" id="v-grade" hidden>
+    <div>
+      <h2>Оцінка</h2>
+      <p class="lead" style="margin-top:6px">Результат за весь урок: тренаж до 4 балів і тест до 8 балів, разом 12.</p>
+    </div>
+    <div id="grade-root" style="display:flex;flex-direction:column;gap:20px"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+function el(tag,props,...kids){
+  const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(props||{})){
+    if(k==='class')e.className=v;
+    else if(k==='html')e.innerHTML=v;
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,'');
+    else if(v!==false&&v!=null)e.setAttribute(k,v);
+  }
+  for(const c of kids.flat()){ if(c==null||c===false)continue; e.append(c.nodeType?c:document.createTextNode(c)); }
+  return e;
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>String(Math.round(n*100)/100).replace('.',',');
+const ball=n=>n===1?'1 бал':fmt(n)+' бала';
+const sp=(c,t)=>'<span class="'+c+'">'+esc(t)+'</span>';
+const decl=(p,v)=>sp('k-prop',p)+': '+sp('k-val',v)+';';
+const ruleBlock=(sel,d)=>sp('k-sel',sel)+' {\n'+d.map(x=>'  '+decl(x[0],x[1])).join('\n')+'\n}';
+const hex2rgb=h=>{const n=parseInt(h.slice(1),16);return 'rgb('+(n>>16&255)+', '+(n>>8&255)+', '+(n&255)+')'};
+const PAPER=':host{display:block;background:#fff;color:#1b2430;border:1px solid #cfd6dd;border-radius:8px;overflow:auto}.stage{padding:14px;font:16px "Onest",system-ui,sans-serif}';
+
+/* ---------- стан ---------- */
+const S={name:'',tr:[],quiz:{done:false,scores:[],warned:false}};
+const BLOCKS=['Селектори та пріоритетність','Шрифти і текст','Блоки і потік документа'];
+
+/* ---------- навігація ---------- */
+const VIEWS=['theory','trainer','quiz','grade'];
+function show(v){
+  if(!VIEWS.includes(v))v='theory';
+  VIEWS.forEach(id=>{ $('#v-'+id).hidden=id!==v; $('#tab-'+id).setAttribute('aria-selected',String(id===v)); });
+  if(v==='grade')renderGrade();
+  window.scrollTo({top:0});
+}
+$$('.nav button').forEach(b=>b.addEventListener('click',()=>{ if(location.hash==='#'+b.dataset.v)show(b.dataset.v); else location.hash=b.dataset.v; }));
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+
+/* ---------- підрозділи теорії ---------- */
+let curB=0;
+function showBlock(b){
+  curB=b;
+  [0,1,2].forEach(i=>{ $('#th-'+i).hidden=i!==b; $('#sb-'+i).setAttribute('aria-selected',String(i===b)); });
+  $('#th-prev').hidden=b===0;
+  $('#th-next').textContent=b===2?'До тренажа →':'Наступний блок →';
+}
+$$('.sub button').forEach(b=>b.addEventListener('click',()=>showBlock(+b.dataset.b)));
+$('#th-prev').addEventListener('click',()=>{showBlock(curB-1);window.scrollTo({top:0})});
+$('#th-next').addEventListener('click',()=>{ if(curB===2)location.hash='trainer'; else {showBlock(curB+1);window.scrollTo({top:0});} });
+
+/* ---------- демо: пріоритет ---------- */
+(function(){
+  const sr=$('#pr-host').attachShadow({mode:'open'});
+  const st=document.createElement('style'), stage=document.createElement('div'), p=document.createElement('p');
+  stage.className='stage'; p.id='main'; p.className='note'; p.textContent='Який колір матиме цей абзац?'; p.style.margin='0'; p.style.fontWeight='600';
+  stage.append(p); sr.append(st,stage);
+  const R=[
+    {id:'pr-tag',sel:'p',col:'#2563eb',name:'селектор тега'},
+    {id:'pr-class',sel:'.note',col:'#16a34a',name:'селектор класу'},
+    {id:'pr-id',sel:'#main',col:'#dc2626',name:'селектор ID'},
+    {id:'pr-inline',sel:null,col:'#9333ea',name:'вбудований стиль'}
+  ];
+  function draw(){
+    const on=R.filter(r=>$('#'+r.id).checked);
+    const inl=on.find(r=>!r.sel);
+    st.textContent=PAPER+on.filter(r=>r.sel).map(r=>r.sel+'{color:'+r.col+'}').join('');
+    p.style.color=inl?inl.col:'';
+    const c=getComputedStyle(p).color;
+    const win=on.find(r=>hex2rgb(r.col)===c);
+    $('#pr-out').textContent=on.length?('Перемагає: '+win.name+'. Інші правила для кольору не діють.'):'Правил немає, діє колір за замовчуванням (чорний).';
+    let code='';
+    on.filter(r=>r.sel).forEach(r=>{code+=ruleBlock(r.sel,[['color',r.col]])+'\n';});
+    code+=sp('k-com','/* HTML */')+'\n'+sp('k-tag','<p id="main" class="note"'+(inl?' style="color: '+inl.col+'"':'')+'>');
+    $('#pr-code').innerHTML=code;
+  }
+  $$('#v-theory input[id^="pr-"]').forEach(i=>i.addEventListener('change',draw)); draw();
+})();
+
+/* ---------- демо: лабораторія тексту ---------- */
+(function(){
+  const sr=$('#lab-host').attachShadow({mode:'open'});
+  const st=document.createElement('style'), p=document.createElement('p');
+  p.className='sample'; p.textContent='Каскадні таблиці стилів відокремлюють зміст сторінки від її вигляду. Один і той самий HTML можна оформити по-різному, змінюючи лише правила CSS.';
+  sr.append(st,p);
+  const v=id=>$('#'+id).value;
+  function draw(){
+    const d=[['font-family',v('lab-ff')],['font-size',v('lab-fs')+'px'],['font-weight',v('lab-fw')],['font-style',v('lab-fst')],['color',v('lab-col')],['text-align',$('input[name="lab-ta"]:checked').value],['text-decoration',v('lab-td')],['line-height',v('lab-lh')],['letter-spacing',v('lab-ls')+'px'],['word-spacing',v('lab-ws')+'px']];
+    st.textContent=':host{display:block;background:#fff;color:#1b2430;border:1px solid #cfd6dd;border-radius:8px;padding:14px;font-family:"Onest",sans-serif}p{margin:0}.sample{'+d.map(x=>x[0]+':'+x[1]+';').join('')+'}';
+    $('#lab-code').innerHTML=ruleBlock('.sample',d);
+    $('#lab-fs-v').textContent=v('lab-fs')+'px'; $('#lab-lh-v').textContent=v('lab-lh'); $('#lab-ls-v').textContent=v('lab-ls')+'px'; $('#lab-ws-v').textContent=v('lab-ws')+'px';
+  }
+  $$('#th-1 .demo input, #th-1 .demo select').forEach(i=>{i.addEventListener('input',draw);i.addEventListener('change',draw);}); draw();
+})();
+
+/* ---------- демо: display ---------- */
+(function(){
+  const items=$$('.dm-item');
+  const say={
+    'block':'Кожен елемент починається з нового рядка. Без width він займає всю доступну ширину. З width стає вужчим, але все одно стоїть на власному рядку.',
+    'inline':'Елементи стоять в один рядок і займають ширину лише свого вмісту. width і height ігноруються, навіть якщо їх задано.',
+    'inline-block':'Елементи стоять в один рядок, і водночас width та height працюють.'
+  };
+  function draw(){
+    const d=$('input[name="dm-d"]:checked').value, z=$('#dm-size').checked;
+    items.forEach(i=>{i.style.display=d;i.style.width=z?'110px':'';i.style.height=z?'46px':'';});
+    const decls=[['display',d]]; if(z){decls.push(['width','110px']);decls.push(['height','46px']);}
+    $('#dm-code').innerHTML=ruleBlock('.item',decls);
+    $('#dm-say').textContent=say[d];
+  }
+  $$('#th-2 input[name="dm-d"], #dm-size').forEach(i=>i.addEventListener('change',draw)); draw();
+  const box=$('#bg-box');
+  function bg(){
+    const k=$('#bg-kind').value,a=$('#bg-c1').value,b=$('#bg-c2').value,ang=$('#bg-ang').value;
+    let d;
+    if(k==='solid')d=['background-color',a];
+    else if(k==='linear')d=['background','linear-gradient('+ang+'deg, '+a+', '+b+')'];
+    else d=['background','radial-gradient(circle, '+a+', '+b+')'];
+    box.style.background=''; box.style.backgroundColor=''; box.style[d[0]==='background'?'background':'backgroundColor']=d[1];
+    $('#bg-c2-row').hidden=k==='solid'; $('#bg-ang-row').hidden=k!=='linear';
+    $('#bg-ang-v').textContent=ang+'°';
+    $('#bg-code').innerHTML=ruleBlock('.box',[['width','100%'],['height','90px'],d]);
+  }
+  $$('#bg-kind,#bg-c1,#bg-c2,#bg-ang').forEach(i=>{i.addEventListener('input',bg);i.addEventListener('change',bg);}); bg();
+})();
+
+/* ---------- ТРЕНАЖ ---------- */
+const cs=(r,s)=>{const e=r.querySelector(s);return e?getComputedStyle(e):null;};
+const TASKS=[
+  {block:0,pill:'Селектори',title:'Селектори і пріоритет',
+   brief:'У коді вже є правило для всіх абзаців. Допишіть правила так, щоб різні елементи отримали різні кольори.',
+   html:'<h1>Мої нотатки</h1>\n<div class="card"><p>Текст у картці</p></div>\n<p id="note">Окремий абзац</p>\n<p>Звичайний абзац</p>',
+   starter:'p { color: gray; }\n\n/* допишіть правила нижче */\n',
+   checks:[
+     {l:'Абзац усередині .card — червоний (контекстний селектор .card p)',t:(r,c)=>cs(r,'.card p').color==='rgb(255, 0, 0)'&&/\.card\s+p\s*\{/.test(c)},
+     {l:'Абзац з id="note" — синій (селектор ID)',t:(r,c)=>cs(r,'#note').color==='rgb(0, 0, 255)'&&/#note\s*\{/.test(c)},
+     {l:'Заголовок h1 — темно-зелений #006400 (селектор тега)',t:(r,c)=>cs(r,'h1').color==='rgb(0, 100, 0)'&&/(^|[\s,}])h1\s*[{,]/.test(c)}
+   ],
+   hint:'Контекстний селектор записують через пропуск: .card p { … }. Клас починається з крапки, ID — з решітки #, а тег — це просто його назва. Правило з ID сильніше за правило з тегом, тому колір абзацу #note зміниться.'},
+  {block:1,pill:'Шрифти',title:'Форматування шрифтів',
+   brief:'Оформте заголовок і абзац за допомогою властивостей шрифту.',
+   html:'<h1>Каталог рослин</h1>\n<p>Сад починається з насіння.</p>',
+   starter:'/* h1 і p */\n',
+   checks:[
+     {l:'h1: шрифт Arial, резервний — sans-serif',t:r=>{const f=cs(r,'h1').fontFamily.toLowerCase().replace(/["']/g,'');return /^arial\s*,/.test(f)&&/sans-serif\s*$/.test(f);}},
+     {l:'h1: розмір шрифту 32px',t:r=>cs(r,'h1').fontSize==='32px'},
+     {l:'h1: жирний',t:r=>parseInt(cs(r,'h1').fontWeight,10)>=700},
+     {l:'h1: курсив',t:r=>cs(r,'h1').fontStyle==='italic'},
+     {l:'p: розмір шрифту 18px',t:r=>cs(r,'p').fontSize==='18px'}
+   ],
+   hint:'font-family перелічують через кому від основного шрифту до резервного, наприклад: Arial, sans-serif. Жирність — font-weight: bold (або 700). Курсив — font-style: italic. Розмір — font-size у px.'},
+  {block:1,pill:'Текст',title:'Форматування тексту',
+   brief:'Зробіть абзац читабельним, а посилання — без підкреслення.',
+   html:'<p class="text">CSS допомагає зробити текст зручним для читання: вирівнювання, колір, інтервали.</p>\n<a href="#">Читати далі</a>',
+   starter:'/* .text і a */\n',
+   checks:[
+     {l:'.text: вирівнювання по центру',t:r=>cs(r,'.text').textAlign==='center'},
+     {l:'.text: міжрядковий інтервал від 1.5 до 1.8',t:r=>{const s=cs(r,'.text'),x=parseFloat(s.lineHeight)/parseFloat(s.fontSize);return x>=1.49&&x<=1.81;}},
+     {l:'.text: колір #003366',t:r=>cs(r,'.text').color==='rgb(0, 51, 102)'},
+     {l:'.text: відстань між літерами 2px',t:r=>cs(r,'.text').letterSpacing==='2px'},
+     {l:'a: без підкреслення',t:r=>{const s=cs(r,'a');return s.textDecorationLine==='none'||s.textDecoration.indexOf('none')===0;}}
+   ],
+   hint:'Вирівнювання: text-align: center. Міжрядковий інтервал можна задати числом, наприклад line-height: 1.6. Колір можна записати HEX-кодом. Підкреслення прибирає text-decoration: none для селектора a.'},
+  {block:2,pill:'Блоки',title:'Блоки, display і фон',
+   brief:'Створіть банер із градієнтом і зробіть три мітки такими, що стоять в один рядок і мають задану ширину.',
+   html:'<div class="banner">Банер уроку</div>\n<span class="tag">HTML</span>\n<span class="tag">CSS</span>\n<span class="tag">JS</span>',
+   starter:'/* .banner і .tag */\n',
+   checks:[
+     {l:'.banner: ширина 300px і висота 100px',t:r=>{const s=cs(r,'.banner');return s.width==='300px'&&s.height==='100px';}},
+     {l:'.banner: фон — linear-gradient',t:r=>/linear-gradient/.test(cs(r,'.banner').backgroundImage)},
+     {l:'.tag: display: inline-block',t:r=>cs(r,'.tag').display==='inline-block'},
+     {l:'.tag: ширина 70px',t:r=>cs(r,'.tag').width==='70px'},
+     {l:'.tag: має колір фону (background-color)',t:r=>{const b=cs(r,'.tag').backgroundColor;return b!=='rgba(0, 0, 0, 0)'&&b!=='transparent';}}
+   ],
+   hint:'width і height задають у px: width: 300px. Градієнт: background: linear-gradient(90deg, колір1, колір2). Щоб span міг мати ширину, але залишився в рядку, потрібне значення display: inline-block. Колір фону — background-color.'}
+];
+
+function trainerPts(){return S.tr.reduce((a,t)=>a+t.pts,0);}
+function quizPts(){return S.quiz.done?S.quiz.scores.reduce((a,b)=>a+b,0):0;}
+function updateChip(){ $('#score-chip').textContent=fmt(trainerPts()+quizPts())+' / 12'; }
+
+let pillEls=[], panelEls=[];
+function showTask(n){
+  panelEls.forEach((p,j)=>{p.hidden=j!==n;});
+  pillEls.forEach((p,j)=>p.setAttribute('aria-selected',String(j===n)));
+}
+function buildTrainer(){
+  const root=$('#trainer-root'); root.replaceChildren();
+  S.tr=TASKS.map(()=>({hint:false,done:false,pts:0}));
+  pillEls=[]; panelEls=[];
+  const pills=el('div',{class:'pills',role:'tablist','aria-label':'Завдання тренажа'});
+  TASKS.forEach((t,i)=>{
+    const pl=el('button',{class:'pill',role:'tab','data-state':'idle','aria-selected':'false',onclick:()=>showTask(i)},el('span',null,(i+1)+'. '+t.pill),el('small',null,'не виконано'));
+    pillEls.push(pl); pills.append(pl);
+  });
+  root.append(pills);
+
+  TASKS.forEach((t,i)=>{
+    const st=S.tr[i];
+    const ta=el('textarea',{class:'ed',id:'tr-css-'+i,spellcheck:'false',autocapitalize:'off',autocomplete:'off','aria-label':'CSS-код завдання '+(i+1)});
+    ta.value=t.starter;
+    const host=el('div'); const sr=host.attachShadow({mode:'open'});
+    const sty=document.createElement('style'), stage=document.createElement('div');
+    stage.className='stage'; stage.innerHTML=t.html; sr.append(sty,stage);
+    const render=()=>{sty.textContent=PAPER+ta.value;}; ta.addEventListener('input',render); render();
+
+    const lis=t.checks.map(c=>el('li',{'data-s':'idle'},el('span',{class:'mk'},'○'),el('span',null,c.l)));
+    const fb=el('div',{class:'fb',role:'status','aria-live':'polite'});
+    const hintBox=el('div',{class:'hint',hidden:true},el('b',null,'Підказка. '),t.hint);
+    const checkBtn=el('button',{class:'btn primary'},'Перевірити');
+    const hintBtn=el('button',{class:'btn'},'Підказка (оцінка стане 0,5 бала)');
+    const retryBtn=el('button',{class:'btn warn',hidden:true},'Виконати знову');
+    const nextBtn=el('button',{class:'btn primary',hidden:true},i<TASKS.length-1?'Наступне завдання →':'До експрес-тесту →');
+
+    function mark(res){
+      lis.forEach((li,k)=>{const s=res?(res[k]?'ok':'no'):'idle'; li.dataset.s=s; li.firstChild.textContent=s==='ok'?'✓':s==='no'?'✗':'○';});
+    }
+    checkBtn.onclick=()=>{
+      const css=ta.value;
+      const res=t.checks.map(c=>{try{return !!c.t(stage,css);}catch(e){return false;}});
+      mark(res);
+      const okN=res.filter(Boolean).length;
+      if(okN===res.length){
+        st.done=true; st.pts=st.hint?0.5:1;
+        fb.className='fb ok'; fb.textContent='Зараховано: +'+ball(st.pts)+(st.hint?' (виконано після підказки).':'.');
+        ta.disabled=true; checkBtn.disabled=true; hintBtn.disabled=true; retryBtn.hidden=true; nextBtn.hidden=false;
+        pillEls[i].dataset.state='done'; pillEls[i].lastChild.textContent='+'+fmt(st.pts)+' б.';
+        updateChip();
+      }else{
+        fb.className='fb no';
+        fb.textContent='Виконано '+okN+' з '+res.length+'. Перегляньте позначки ✗'+(st.hint?' і спробуйте ще раз.':' або відкрийте підказку.');
+      }
+    };
+    hintBtn.onclick=()=>{
+      st.hint=true; hintBox.hidden=false; retryBtn.hidden=false;
+      hintBtn.textContent='Підказка відкрита (максимум 0,5 бала)';
+      fb.className='fb'; fb.textContent='Тепер можна виконати завдання знову: натисніть «Виконати знову» або виправте код.';
+    };
+    retryBtn.onclick=()=>{
+      ta.value=t.starter; render(); mark(null); fb.className='fb'; fb.textContent='Нова спроба. Підказка залишається вище.'; ta.focus();
+    };
+    nextBtn.onclick=()=>{ if(i<TASKS.length-1)showTask(i+1); else location.hash='quiz'; window.scrollTo({top:0}); };
+
+    const panel=el('div',{class:'tr-top-wrap',style:'display:flex;flex-direction:column;gap:14px'},
+      el('div',{class:'tr-top'},el('h3',null,'Завдання '+(i+1)+'. '+t.title),el('span',{class:'tag'},'Блок '+(t.block+1)+' · до 1 бала')),
+      el('p',null,t.brief),
+      el('ul',{class:'reqs'},lis),
+      el('div',{class:'tr-grid'},
+        el('div',null,el('div',{class:'lbl'},'HTML (змінювати не потрібно)'),el('pre',{class:'code',html:'<span class="k-tag">'+esc(t.html)+'</span>'}),el('div',{class:'lbl'},'Ваш CSS'),ta),
+        el('div',null,el('div',{class:'lbl'},'Результат'),host)),
+      el('div',{class:'actions'},checkBtn,hintBtn,retryBtn,nextBtn),
+      hintBox,fb);
+    panel.hidden=true; panelEls.push(panel); root.append(panel);
+  });
+  showTask(0);
+}
+
+/* ---------- ТЕСТ ---------- */
+function qSingle(Q,id){
+  const wrap=el('div',{class:'opts',role:'radiogroup'});
+  const inputs=Q.opts.map((o,i)=>{const inp=el('input',{type:'radio',name:id,value:i}); wrap.append(el('label',{class:'opt'},inp,el('span',{class:Q.mono?'mono':''},o))); return inp;});
+  return {node:wrap,answered:()=>inputs.some(i=>i.checked),
+    score:()=>inputs.findIndex(i=>i.checked)===Q.correct?1:0,
+    reveal:()=>inputs.forEach((inp,i)=>{inp.disabled=true;const l=inp.parentElement;if(i===Q.correct)l.classList.add('is-correct');else if(inp.checked)l.classList.add('is-wrong');}),
+    answer:()=>Q.opts[Q.correct]};
+}
+function qMulti(Q,id){
+  const wrap=el('div',{class:'opts'});
+  const inputs=Q.opts.map((o,i)=>{const inp=el('input',{type:'checkbox',name:id,value:i}); wrap.append(el('label',{class:'opt'},inp,el('span',{class:'mono'},o))); return inp;});
+  return {node:wrap,answered:()=>inputs.some(i=>i.checked),
+    score:()=>{let ok=0,bad=0;inputs.forEach((inp,i)=>{if(inp.checked){Q.correct.includes(i)?ok++:bad++;}});return Math.max(0,(ok-bad)/Q.correct.length);},
+    reveal:()=>inputs.forEach((inp,i)=>{inp.disabled=true;const l=inp.parentElement;if(Q.correct.includes(i))l.classList.add('is-correct');else if(inp.checked)l.classList.add('is-wrong');}),
+    answer:()=>Q.correct.map(i=>Q.opts[i]).join(', ')};
+}
+function qMatch(Q,id){
+  const wrap=el('div',{class:'opts'});
+  const sels=Q.pairs.map((p,i)=>{
+    const s=el('select',{id:id+'-'+i,'aria-label':p.prop},el('option',{value:''},'— оберіть —'),Q.choices.map((c,k)=>el('option',{value:k},c)));
+    wrap.append(el('div',{class:'mrow'},el('code',null,p.prop),s)); return s;
+  });
+  return {node:wrap,answered:()=>sels.some(s=>s.value!==''),
+    score:()=>sels.filter((s,i)=>s.value!==''&&+s.value===Q.pairs[i].answer).length/Q.pairs.length,
+    reveal:()=>sels.forEach((s,i)=>{s.disabled=true;s.parentElement.classList.add(s.value!==''&&+s.value===Q.pairs[i].answer?'is-correct':'is-wrong');}),
+    answer:()=>Q.pairs.map(p=>p.prop+' — '+Q.choices[p.answer]).join('; ')};
+}
+function qOrder(Q,id){
+  let order=Q.start.slice(), touched=false, locked=false;
+  const ol=el('ol',{class:'order'});
+  function draw(res){
+    ol.replaceChildren();
+    order.forEach((idx,pos)=>{
+      const up=el('button',{type:'button','aria-label':'Підняти вище',disabled:locked||pos===0,onclick:()=>{[order[pos-1],order[pos]]=[order[pos],order[pos-1]];touched=true;draw();}},'↑');
+      const dn=el('button',{type:'button','aria-label':'Опустити нижче',disabled:locked||pos===order.length-1,onclick:()=>{[order[pos+1],order[pos]]=[order[pos],order[pos+1]];touched=true;draw();}},'↓');
+      ol.append(el('li',{class:'ord'+(res?(order[pos]===Q.correct[pos]?' is-correct':' is-wrong'):'')},el('span',{class:'ord-n'},pos+1),el('span',{class:'ord-t'},Q.items[idx]),el('span',{class:'ord-b'},up,dn)));
+    });
+  }
+  draw();
+  return {node:ol,answered:()=>touched,
+    score:()=>order.filter((x,p)=>x===Q.correct[p]).length/order.length,
+    reveal:()=>{locked=true;draw(true);},
+    answer:()=>Q.correct.map(i=>Q.items[i]).join(' → ')};
+}
+function qFill(Q,id){
+  const inp=el('input',{type:'text',id:id+'-in',autocomplete:'off',spellcheck:'false',autocapitalize:'off','aria-label':'Значення'});
+  const node=el('div',{class:'fill'},Q.prefix,inp,Q.suffix);
+  const val=()=>inp.value.trim().toLowerCase().replace(/;$/,'').trim();
+  return {node,answered:()=>inp.value.trim()!=='',
+    score:()=>Q.accept.includes(val())?1:0,
+    reveal:()=>{inp.disabled=true;node.classList.add(Q.accept.includes(val())?'is-correct':'is-wrong');},
+    answer:()=>Q.accept[0]};
+}
+
+const QUIZ=[
+  {type:'single',tag:'Одна відповідь',block:0,q:'Який запис є селектором <b>класу</b>?',mono:true,opts:['p { … }','.card { … }','#card { … }','a:hover { … }'],correct:1,
+   why:'Селектор класу починається з крапки. Решітка позначає ідентифікатор, двокрапка — псевдоклас.'},
+  {type:'multi',tag:'Кілька відповідей',block:1,q:'Оберіть <b>усі</b> властивості, які керують саме шрифтом.',opts:['font-family','text-align','font-size','font-weight','line-height','font-style','color'],correct:[0,2,3,5],
+   why:'Шрифтом керують font-family, font-size, font-weight і font-style. text-align, line-height і color належать до форматування тексту.'},
+  {type:'single',tag:'Так / Ні',block:2,q:'Рядковий елемент <code>span</code> за замовчуванням починається з нового рядка й займає всю доступну ширину.',opts:['Правильно','Неправильно'],correct:1,
+   why:'Це поведінка блочних елементів. span — рядковий, він займає ширину лише свого вмісту й стоїть у рядку.'},
+  {type:'match',tag:'Відповідність',block:1,q:'Поєднайте властивість з її призначенням.',
+   pairs:[{prop:'text-align',answer:0},{prop:'line-height',answer:1},{prop:'letter-spacing',answer:2},{prop:'text-decoration',answer:3}],
+   choices:['вирівнювання тексту','міжрядковий інтервал','відстань між літерами','підкреслення чи закреслення'],
+   why:'text-align вирівнює текст, line-height задає міжрядковий інтервал, letter-spacing — відстань між літерами, text-decoration — оздоблення.'},
+  {type:'order',tag:'Порядок',block:0,q:'Розташуйте селектори від <b>найвищого</b> пріоритету (зверху) до найнижчого.',
+   items:['Селектор тега (p, h1)','Селектор класу (.class)','Вбудований стиль (style="")','Селектор ID (#id)'],start:[1,0,3,2],correct:[2,3,1,0],
+   why:'Порядок пріоритету: вбудований стиль, ідентифікатор, клас, тег.'},
+  {type:'fill',tag:'Впишіть відповідь',block:1,q:'Допишіть значення, щоб прибрати підкреслення у посилань.',prefix:'a { text-decoration: ',suffix:'; }',accept:['none'],
+   why:'text-decoration: none прибирає підкреслення. underline його додає, line-through закреслює.'},
+  {type:'single',tag:'Аналіз коду',block:0,q:'Якого кольору буде текст абзацу?',
+   code:sp('k-sel','p')+' { '+decl('color','blue')+' }\n'+sp('k-sel','.note')+' { '+decl('color','green')+' }\n'+sp('k-sel','#main')+' { '+decl('color','red')+' }\n\n'+sp('k-tag','<p id="main" class="note">Привіт</p>'),
+   opts:['синього','зеленого','червоного','чорного (за замовчуванням)'],correct:2,
+   why:'До абзацу підходять усі три правила. Найвищий пріоритет має селектор ID, тому текст буде червоним.'},
+  {type:'single',tag:'Одна відповідь',block:2,q:'Яке значення <code>display</code> дає змогу елементам стояти в один рядок і мати задані <code>width</code> та <code>height</code>?',mono:true,opts:['block','inline','inline-block','none'],correct:2,
+   why:'inline-block поєднує обидві властивості: елементи стоять у рядок, а розміри працюють. block ставить елементи в стовпчик, inline ігнорує розміри, none ховає елемент.'}
+];
+let ctrls=[];
+function buildQuiz(){
+  const root=$('#quiz-root'); root.replaceChildren();
+  S.quiz={done:false,scores:[],warned:false};
+  ctrls=QUIZ.map((Q,i)=>{
+    const id='q'+(i+1);
+    const c=Q.type==='multi'?qMulti(Q,id):Q.type==='match'?qMatch(Q,id):Q.type==='order'?qOrder(Q,id):Q.type==='fill'?qFill(Q,id):qSingle(Q,id);
+    c.res=el('div',{class:'qres',hidden:true});
+    c.card=el('article',{class:'qcard'},
+      el('div',{class:'qh'},el('span',{class:'qn'},'Питання '+(i+1)+' з '+QUIZ.length),el('span',{class:'tag'},Q.tag)),
+      el('p',{class:'qtext',html:Q.q}),
+      Q.code?el('pre',{class:'code',html:Q.code}):null,
+      c.node,c.res);
+    root.append(c.card); return c;
+  });
+  const msg=el('p',{class:'fb',role:'status','aria-live':'polite'});
+  const btn=el('button',{class:'btn primary'},'Завершити тест');
+  const bar=el('div',{class:'submit-bar'},btn,msg);
+  const done=el('div',{class:'banner',hidden:true});
+  root.append(bar,done);
+  btn.onclick=()=>{
+    const un=ctrls.filter(c=>!c.answered()).length;
+    if(un&&!S.quiz.warned){S.quiz.warned=true; msg.className='fb no'; msg.textContent='Без відповіді: '+un+'. Дайте відповіді або завершіть тест так.'; btn.textContent='Все одно завершити'; return;}
+    S.quiz.scores=ctrls.map(c=>c.score());
+    ctrls.forEach((c,i)=>{
+      const sc=S.quiz.scores[i]; c.reveal();
+      c.card.dataset.r=sc===1?'ok':sc===0?'no':'part';
+      c.res.hidden=false;
+      c.res.innerHTML='<b>'+(sc===1?'✓ ':sc===0?'✗ ':'◐ ')+fmt(sc)+' / 1</b> · '+esc(QUIZ[i].why)+(sc<1?' <br><b>Правильно:</b> '+esc(c.answer()):'');
+    });
+    S.quiz.done=true; btn.disabled=true; msg.textContent='';
+    updateChip();
+    done.hidden=false; done.replaceChildren(el('span',null,'Тест завершено: '+fmt(quizPts())+' з 8 балів.'),el('button',{class:'btn primary',onclick:()=>{location.hash='grade';}},'Перейти до оцінки →'));
+    done.scrollIntoView({block:'center'});
+  };
+}
+
+/* ---------- ОЦІНКА ---------- */
+const LEVELS=[[10,12,'Високий'],[7,9,'Достатній'],[4,6,'Середній'],[1,3,'Початковий']];
+function levelOf(j){ if(j<=0)return '—'; const l=LEVELS.find(x=>j>=x[0]&&j<=x[1]); return l?l[2]:'—'; }
+function blockStats(){
+  const e=[0,0,0],m=[0,0,0];
+  TASKS.forEach((t,i)=>{m[t.block]+=1;e[t.block]+=S.tr[i].pts;});
+  QUIZ.forEach((q,i)=>{m[q.block]+=1;if(S.quiz.done)e[q.block]+=S.quiz.scores[i];});
+  return {e,m};
+}
+let resetArmed=false;
+function renderGrade(){
+  const root=$('#grade-root'); root.replaceChildren();
+  const tp=trainerPts(), qp=quizPts(), total=tp+qp;
+  const doneT=S.tr.filter(t=>t.done).length;
+  const complete=S.quiz.done&&doneT===TASKS.length;
+  const j=Math.round(total);
+  const bs=blockStats();
+
+  root.append(el('div',null,
+    el('div',{class:'big'},el('span',{class:'n'},fmt(total)),el('span',{class:'of'},'/ 12 балів')),
+    el('div',{class:'level'},'Рівень: '+levelOf(j)+(complete?'':' (попередній результат)')),
+    el('p',{class:'lead'},(S.name?S.name+'. ':'')+'Оцінка до журналу: '+(total>0?j:'—')+(complete?'':'. Вона зміниться, коли ви завершите всі завдання.'))));
+
+  root.append(el('div',{class:'stat'},
+    el('div',null,el('b',null,'Тренаж'),'Виконано завдань: '+doneT+' з '+TASKS.length+'. Бали: '+fmt(tp)+' з 4.'),
+    el('div',null,el('b',null,'Експрес-тест'),S.quiz.done?'Пройдено. Бали: '+fmt(qp)+' з 8.':'Ще не завершено. Бали: 0 з 8.'),
+    el('div',null,el('b',null,'Підказки'),'Використано: '+S.tr.filter(t=>t.hint).length+' з '+TASKS.length)));
+
+  const bars=el('div',{class:'bars'});
+  [['Тренаж',tp,4],['Експрес-тест',qp,8]].forEach(x=>bars.append(el('div',null,el('div',{class:'bar-h'},el('span',null,x[0]),el('b',null,fmt(x[1])+' / '+x[2])),el('div',{class:'bar'},el('i',{style:'width:'+Math.round(x[1]/x[2]*100)+'%'})))));
+  root.append(bars);
+
+  const started=doneT>0||S.quiz.done;
+  const rows=BLOCKS.map((n,b)=>{
+    const r=bs.e[b]/bs.m[b];
+    const adv=!started?'—':r>=0.8?'Добре засвоєно':r>=0.5?'Повторіть окремі місця':'Поверніться до теорії блоку';
+    return el('tr',null,el('td',null,'Блок '+(b+1)+'. '+n),el('td',{class:'mono'},fmt(bs.e[b])+' / '+bs.m[b]),el('td',null,adv),el('td',null,el('button',{class:'btn',style:'padding:6px 10px;font-size:14px',onclick:()=>{showBlock(b);location.hash='theory';}},'Теорія')));
+  });
+  root.append(el('div',null,el('h3',{style:'margin-bottom:10px'},'Результат за блоками'),
+    el('div',{class:'tbl-wrap'},el('table',{style:'min-width:560px'},el('thead',null,el('tr',null,el('th',null,'Блок'),el('th',null,'Бали'),el('th',null,'Висновок'),el('th',null,''))),el('tbody',null,rows)))));
+
+  root.append(el('div',null,el('h3',{style:'margin-bottom:10px'},'Шкала рівнів'),
+    el('div',{class:'scale'},LEVELS.slice().reverse().map(l=>el('div',{'data-on':(j>=l[0]&&j<=l[1])?'1':'0'},el('b',null,l[0]+'–'+l[1]),' ',l[2])))));
+
+  const summary=(S.name?S.name+'\n':'')+'CSS: селектори, шрифти та блоки\nТренаж: '+fmt(tp)+' / 4 (завдань: '+doneT+' з '+TASKS.length+')\nЕкспрес-тест: '+fmt(qp)+' / 8'+(S.quiz.done?'':' (не завершено)')+'\nРазом: '+fmt(total)+' / 12\nОцінка до журналу: '+(total>0?j:'—')+'\n'+BLOCKS.map((n,b)=>'Блок '+(b+1)+' ('+n+'): '+fmt(bs.e[b])+' / '+bs.m[b]).join('\n');
+  const ta=el('textarea',{class:'sumbox',id:'sum-box',readonly:true,'aria-label':'Текст результату'}); ta.value=summary;
+  const cpMsg=el('span',{class:'fb',role:'status'});
+  const cp=el('button',{class:'btn',onclick:()=>{
+    ta.select();
+    let p; try{p=navigator.clipboard.writeText(summary);}catch(e){p=Promise.reject(e);}
+    p.then(()=>{cpMsg.textContent='Скопійовано.';}).catch(()=>{cpMsg.textContent='Текст виділено, скопіюйте його вручну.';});
+  }},'Скопіювати результат');
+  root.append(el('div',{style:'display:flex;flex-direction:column;gap:10px'},el('h3',null,'Підсумок для вчителя'),ta,el('div',{class:'actions'},cp,cpMsg)));
+
+  const rb=el('button',{class:'btn'},resetArmed?'Так, скинути все':'Почати знову');
+  rb.onclick=()=>{
+    if(!resetArmed){resetArmed=true;rb.textContent='Так, скинути все';rb.classList.add('warn');setTimeout(()=>{resetArmed=false;if(rb.isConnected){rb.textContent='Почати знову';rb.classList.remove('warn');}},5000);return;}
+    resetArmed=false; S.name=''; $('#stu-name').value=''; buildTrainer(); buildQuiz(); updateChip(); location.hash='theory'; show('theory');
+  };
+  root.append(el('div',{class:'actions'},rb,el('span',{style:'color:var(--ink-2);font-size:14px'},'Скидає тренаж, тест і ім’я для наступного учня.')));
+}
+
+/* ---------- старт ---------- */
+$('#stu-name').addEventListener('input',e=>{S.name=e.target.value.trim();});
+buildTrainer(); buildQuiz(); updateChip(); showBlock(0);
+show(location.hash.slice(1));
+})();
+</script>
+
+</body></html>
